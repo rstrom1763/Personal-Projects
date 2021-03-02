@@ -1,4 +1,5 @@
-﻿
+﻿Function Compare-PlexDB{
+
 $csv1 = Import-Csv "C:\Users\autob\Downloads\Movies-Level 6-20210102-210814.csv"
 $csv2 = Import-Csv "C:\Users\autob\Downloads\Kent-plex-library-exported - Kent-plex-library-exported.csv"
 $need = @()
@@ -35,3 +36,5 @@ foreach($movie in $csv1){
 }
 $need | Select-Object "Sort title"
 $count
+
+}
