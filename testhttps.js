@@ -1,6 +1,11 @@
-var http = require('http');
+var https = require('https');
+var fs = require('fs');
+const options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
 
-http.createServer(function (req, res) {
+https.createServer(options, function (req, res) {
   var body = "";
   req.on('data', function (chunk) {
     body += chunk;
