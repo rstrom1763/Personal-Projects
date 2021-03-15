@@ -1,6 +1,6 @@
 #A1C Strom
 
-cls
+Clear-Host
 
 Import-Module -Name poshrsjob
 
@@ -19,7 +19,7 @@ $tempSpace = "C://temp/tempspace" #Folder for which the script uses for temporar
 
 $jobLimit = 700 #Leave this alone
 
-cd $tempSpace;Remove-Item * #Empties out the temporary space to eliminate conflicts.
+Set-Location $tempSpace;Remove-Item * #Empties out the temporary space to eliminate conflicts.
 
 if ((Test-Path $savePath) -eq $false){
 
@@ -184,7 +184,7 @@ function Function-ToSend {
                         1..($sessions.count - 1) | Foreach-Object {
             
                             #Start to build the custom object
-                            $temp = "" | Select ComputerName, Username, SessionName, Id, State, IdleTime, LogonTime
+                            $temp = "" | Select-Object ComputerName, Username, SessionName, Id, State, IdleTime, LogonTime
                             $temp.ComputerName = $computer
 
                             #The output of query.exe is dynamic. 
@@ -412,7 +412,7 @@ Add-Type -Language CSharp -TypeDefinition @'
     
     if ((Test-Path $tempFilePath) -eq $true){
 
-        rm $tempFilePath
+        Remove-Item $tempFilePath
 
     }
 
@@ -427,7 +427,7 @@ Add-Type -Language CSharp -TypeDefinition @'
     $count = 0
     while($data.State -ne "Active" -and $count -le 10){
 
-        $data = Get-UserSession | where {$_.State -like "*Active*"}
+        $data = Get-UserSession | Where-Object {$_.State -like "*Active*"}
         
         if($data.State -ne "Active"){Start-Sleep 1;$count += 1}
 
@@ -463,7 +463,7 @@ Add-Type -Language CSharp -TypeDefinition @'
     $model = $model -replace "2-in-1 QEB 2020B",""
     Add-Member -InputObject $data -Name "Model" -Value $model -MemberType NoteProperty
 
-    $ip = Test-Connection -ComputerName (hostname) -Count 1  | Select IPV4Address
+    $ip = Test-Connection -ComputerName (hostname) -Count 1  | Select-Object IPV4Address
     Add-Member -InputObject $data -Name "IP" -Value $ip.IPV4Address.ToString() -MemberType NoteProperty
 
     $bios = Get-BiosType
@@ -505,7 +505,7 @@ Wait-Job * -Timeout 120 > $null
 
 $count = 0
 $jobs = Get-Job
-$jobs | where { $_.State -eq "Completed" -or $_.State -eq "Failed" } | Remove-Job
+$jobs | Where-Object { $_.State -eq "Completed" -or $_.State -eq "Failed" } | Remove-Job
 $jobCount = $jobs | Measure-Object
 $jobCount = $jobCount.Count
 $jobLimit = $jobLimit + $jobCount
@@ -532,7 +532,7 @@ foreach ($computer in $computers){
                 $filePath = "\\$computer\C$\temp.csv"
                 Import-Csv -Path $filePath | 
                 Export-Csv -Path "$tempSpace/$computer.csv" -Append -NoClobber -NoTypeInformation
-                rm $filePath
+                Remove-Item $filePath
                 Write-Host $computer
              
             }
@@ -560,12 +560,12 @@ foreach ($computer in $computers){
 Write-Host "Waiting on RSJobs to complete`n"
 Wait-RSJob * -Timeout 240
 
-cd $tempSpace
+Set-Location $tempSpace
 $files = Get-ChildItem -Path $tempSpace 
 
 foreach($file in $files){
     
-    Import-Csv -Path $file | where { $_.State -eq "Active" } | 
+    Import-Csv -Path $file | Where-Object { $_.State -eq "Active" } | 
     Select-Object ComputerName,IP,Username,LogonTime,SDC,Make,Model,BIOS,SecureBoot | 
     Export-Csv -Path $savePath -Append -NoTypeInformation -NoClobber
 
