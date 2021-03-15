@@ -9,15 +9,18 @@ datafile = 'test.txt';
 htmlfile = 'button.html'
 
 app.get('/button', (req, res) => {
-
+  status = "";
   fs.readFile(datafile, 'utf8', (err, data) => {
     if (err) { err };
     if (data === '1') {
       fs.writeFile(datafile, '0', (err) => err);
+      status = 'Off';
     }
     else {
       fs.writeFile(datafile, '1', (err) => err);
+      status = 'On';
     }
+    res.send(status);
   });
 
 });
