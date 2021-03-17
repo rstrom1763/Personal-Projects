@@ -25,14 +25,14 @@ app.get('/button', (req, res) => {
 
 });
 
-app.get('/check',(req,res) => {
+app.get('/check', (req, res) => {
 
-  fs.readFile(datafile,'utf8',(err,data) => {
+  fs.readFile(datafile, 'utf8', (err, data) => {
 
-    if(err){
+    if (err) {
       res.send(err);
     }
-    else{
+    else {
       res.send(data);
     }
 
@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
     else {
       res.send(data);
     }
-
+    
   });
 
 });
