@@ -1,40 +1,56 @@
-﻿Function Compare-PlexDB{
-
-$csv1 = Import-Csv "C:\Users\autob\Downloads\Movies-Level 6-20210102-210814.csv"
-$csv2 = Import-Csv "C:\Users\autob\Downloads\Kent-plex-library-exported - Kent-plex-library-exported.csv"
-$need = @()
-
-#$csv1 | 
-#Select-Object "Sort title","Year","Bitrate","Video Resolution","Video Codec","Part Size","Part File","Media ID","Title","Duration","Added","Updated","Width","Height","Aspect Ratio","Audio Codec","Container","Part File Combined","Part File Path"
-
-$count = 0
-foreach($movie in $csv1){
+﻿Function Compare-PlexDB {
     
-    $found = $false
+    param(
 
-    foreach ($movie2 in $csv2){
+        [Parameter(Mandatory = $true)][String]$csvDB1,
+        [Parameter(Mandatory = $true)][String]$csvDB2
 
-        if($movie."Sort title" -eq $movie2."Sort title"){
+    )
 
-            $found = $true
+    $need = @()
+
+    $csv1 = Import-Csv $csvDB1
+    $csv2 = Import-Csv $csvDB2
+
+    Remove-Variable -Name csvdb1, csvdb2
+
+    #$csv1 | 
+    #Select-Object "Sort title","Year","Bitrate","Video Resolution","Video Codec","Part Size","Part File","Media ID","Title","Duration","Added","Updated","Width","Height","Aspect Ratio","Audio Codec","Container","Part File Combined","Part File Path"
+
+    $count = 0
+    foreach ($movie in $csv1) {
         
-        }
-        if($found){
+        $found = $false
+
+        foreach ($movie2 in $csv2) {
+
+            if ($movie."Sort title" -eq $movie2."Sort title") {
+
+                $found = $true
             
-            break
+            }
+            
+            if ($found) {
+                
+                break
 
-        }
-    
-    }
-    if($found -eq $false){
+            }
         
-        $need += $movie
-        $count += 1
-    
+        }
+        if (!$found) {
+            
+            $need += $movie
+            $count += 1
+        
+        }
+
     }
 
-}
-$need | Select-Object "Sort title"
-$count
+    $need | Sort-Object -Property "Sort title" | Write-Output
+    Remove-Variable -Name need, count, csv1, csv2
 
 }
+
+Clear-Host
+Compare-PlexDB -csvDB1 "C:\Strom\Movies.fazz.1 - Movies.fazz.1.csv" -csvDB2 "C:\Strom\MoviesLvl6Mar_23_2021.csv" | Export-Csv C:/strom/test.csv
+Compare-PlexDB -csvDB2 "C:\Strom\Movies.fazz.1 - Movies.fazz.1.csv" -csvDB1 "C:\Strom\MoviesLvl6Mar_23_2021.csv" | Export-Csv C:/strom/test2.csv
