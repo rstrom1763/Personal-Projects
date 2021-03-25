@@ -1,48 +1,29 @@
 ﻿#A1C Strom
 
-Function Run-Report {
+Function Send-Job {
 
     Param(
 
-        [Parameter(Mandatory = $True)][String]$Base, #The base that you are trying to gather info for. Example: McConnell
-        [Parameter(Mandatory = $True)][String]$savePath, #The CSV output file
-        [Parameter(Mandatory = $True)][String]$computers, #text file with the computer names on individual lines. 
-        [Parameter(Mandatory = $True)][String]$tempSpace, #Temporary space for collected data. Is erased at script start. 
-        [String]$HTMLSavePath,
-        [String]$failureSavePath
+        [Parameter(Mandatory = $True)]$computers, #text file with the computer names on individual lines. 
+        [Parameter(Mandatory = $True)]$outputURI
 
     )
 
-    Clear-Host
-
-    Import-Module -Name poshrsjob
-    Connection-Test #Relies on Invoke-Ping
-    Set-Location $tempSpace; Remove-Item * #Empties out the temporary space to eliminate conflicts.
-
-    $domain = Get-ADOrganizationalUnit -filter * | Where-Object { $_.distinguishedname -like "*user*" -and $_.distinguishedname -notcontains "*fn*" } | Select-String $base | select-string "afb users"
-    $date = Get-Date -Format "MM-dd-yyy HH-mm" #Gets the current date
-    $savepath = $savePath.Insert(($savePath.Length - 4), $date)
-    $jobLimit = 700 #Leave this alone, it might be required it might not. Haven't had time to test. 
-    $tempFilePath = "C:/temp.csv" #Specifies the name of the temporary file on the remote machines. Do not change.
-
-    if ((Test-Path $savePath) -eq $false) {
-
-        New-Item -Path $savePath > $null
-
+    if (!(Test-Path $computers)) {
+        return (Write-Error "$computers does not exist. ")
     }
 
-    if ((Test-Path $failureSavePath) -eq $false) {
+    Connection-Test -computers $computers -outfile "C:/temp/results.txt" #Relies on Invoke-Ping
 
-        New-Item -Path $failureSavePath > $null
+    $computers = Get-Content "C:/temp/results.txt"
+    
+    Remove-Job -State Stopped, Failed
 
-    }
-
-    Stop-Job *
-    Remove-Job *
-    Clear-Content $savePath
-    Clear-Content $failureSavePath
-
-    function Function-ToSend {
+    $scriptblock = {
+        
+        param(
+            $outputURI
+            )
 
         function Get-UserSession {
             <#  
@@ -176,7 +157,7 @@ Function Run-Report {
                         1..($sessions.count - 1) | Foreach-Object {
             
                             #Start to build the custom object
-                            $temp = "" | Select ComputerName, Username, SessionName, Id, State, IdleTime, LogonTime
+                            $temp = "" | Select-Object ComputerName, Username, SessionName, Id, State, IdleTime, LogonTime
                             $temp.ComputerName = $computer
 
                             #The output of query.exe is dynamic. 
@@ -394,7 +375,6 @@ Function Run-Report {
 
             [FirmwareType]::GetFirmwareType()
         }
-    
 
         $SDC = reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation\ /v Model | 
         Select-String Model
@@ -408,10 +388,11 @@ Function Run-Report {
         while ($data.State -ne "Active" -and $count -le 10) {
 
             $data = Get-UserSession | Where-Object { $_.State -like "*Active*" }
-        
             if ($data.State -ne "Active") { Start-Sleep 1; $count += 1 }
 
         }
+
+        $data.LogonTime = $data.LogonTime.ToString()
 
         Add-Member -InputObject $data -Name "SDC" -Value $SDC -MemberType NoteProperty
     
@@ -460,17 +441,18 @@ Function Run-Report {
         Add-Member -InputObject $data -Name "SecureBoot" -Value $secureBoot -MemberType NoteProperty
 
 
-        $data | ConvertTo-Json | Invoke-WebRequest -Uri "http://prprl-05teb9:8081/write" -Method Post -ContentType 'application/json'
+        $data | ConvertTo-Json | Invoke-WebRequest -Uri $outputURI -Method Post -ContentType 'application/json'
  
     }
-
+    
     Write-Host "Sending out job to computers`n"
+
 
     foreach ($pc in $computers) {
 
         try {
 
-            Invoke-Command -computername $pc ${function:Function-ToSend} -AsJob > $null
+            Invoke-Command -ComputerName $pc -ScriptBlock $scriptblock -ArgumentList $outputURI -AsJob > $null
 
         }
         catch {

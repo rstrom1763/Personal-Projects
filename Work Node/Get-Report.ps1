@@ -4,7 +4,7 @@ Function Get-Report {
         [Parameter(Mandatory = $true)][String]$jsonDir,
         [Parameter(Mandatory = $true)][String]$exportCSV,
         [String]$adCacheFile,
-        [String]$base
+        [Parameter(Mandatory=$True)][String]$base
     )
     
     $domain = Get-ADOrganizationalUnit -filter * | Where-Object { $_.distinguishedname -like "*user*" -and $_.distinguishedname -notcontains "*fn*" } | Select-String $base | select-string "afb users"
@@ -89,5 +89,3 @@ Function Get-Report {
     $data | Export-Csv $exportCSV -NoTypeInformation
 
 }
-
-measure-command { Get-Report -jsonDir "C:\Users\Ryan\Documents\GitHub\Personal-Projects\Work Node\Data" -exportCSV "C:/strom/test5.csv" -adCacheFile "D:/adcache.csv" }
