@@ -10,8 +10,13 @@ datafile = 'test.txt';
 
 app.post('/write', (req, res) => {
 
-    console.log(req.body.ComputerName);
-    fs.writeFile(datadir + req.body.ComputerName + '.json', JSON.stringify(req.body), (err) => err);
+    if (!(req.body.hasOwnProperty('ComputerName'))) {
+        computername = req.body.computername;
+    } else {
+        computername = req.body.ComputerName;
+    }
+    console.log(computername);
+    fs.writeFile(datadir + computername + '.json', JSON.stringify(req.body), (err) => err);
     res.send("Update Written");
 
 });
