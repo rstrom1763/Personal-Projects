@@ -427,12 +427,12 @@ Function Send-Job {
         else { $secureBoot = "Other" }
         Add-Member -InputObject $data -Name "SecureBoot" -Value $secureBoot -MemberType NoteProperty
 
-        $entryDate = Get-Date
-        Add-Member -InputObject $data -Name "EntryDate" -Value ($entryDate.ToString()) -MemberType NoteProperty
+        Add-Member -InputObject $data -Name "EntryDate" -Value ((Get-Date).ToString()) -MemberType NoteProperty
 
-        $data | Select-Object -Property * -ExcludeProperty state, idletime, id, sessionname |  ConvertTo-Json | 
-        Invoke-WebRequest -Uri $outputURI -Method Post -ContentType 'application/json' -UseBasicParsing
- 
+        $data = $data | Select-Object -Property * -ExcludeProperty state, idletime, id, sessionname |  ConvertTo-Json
+
+        Invoke-WebRequest -Uri $outputURI -Body $data -Method Post -ContentType 'application/json' -UseBasicParsing
+
     }
 
     Write-Host "Sending out job to computers`n"
@@ -441,6 +441,7 @@ Function Send-Job {
 
         try {
 
+            Start-Sleep -Milliseconds 10
             Invoke-Command -ComputerName $pc -ScriptBlock $scriptblock -ArgumentList $outputURI -AsJob > $null
 
         }
