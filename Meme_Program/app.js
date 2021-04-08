@@ -52,4 +52,3 @@ async function insert(database, coll, myobj) {
 
 //insert("mydb", 'customers', { userName: 'Rstrom1763', firstName: 'Ryan', lastName: 'Strom', phone: '816-787-7716', address: '53398 Lawrence Ct McConnell AFB KS 67221', email: 'rstrom1763@gmail.com', favoriteColor: 'Red' });
 //get('mydb', 'customers');
-sendText('ACd1eccbf09f918b263f0e6aaf133127d9', 'f22582e73ef9724117c62a1d52546845', 'This is the ship that made the Kessel Run in fourteen parsecs?', '+15098225903', '(816)-787-7716')
