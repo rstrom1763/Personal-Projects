@@ -49,6 +49,3 @@ async function insert(database, coll, myobj) {
         });
     });
 };
-
-//insert("mydb", 'customers', { userName: 'Rstrom1763', firstName: 'Ryan', lastName: 'Strom', phone: '816-787-7716', address: '53398 Lawrence Ct McConnell AFB KS 67221', email: 'rstrom1763@gmail.com', favoriteColor: 'Red' });
-//get('mydb', 'customers');
