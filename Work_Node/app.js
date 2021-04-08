@@ -2,8 +2,10 @@ const fs = require('fs');
 const express = require('express');
 const app = express();
 
+port = 8081;
 app.use(express.json());
-app.listen(8081);
+app.listen(port);
+console.log('Listening on port ' + port + '... ');
 
 datadir = './data/';
 datafile = 'test.txt';
