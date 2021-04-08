@@ -1,10 +1,10 @@
-﻿#A1C Strom
+#A1C Strom
 
 Function Send-Job {
 
     Param(
 
-        [Parameter(Mandatory = $True)]$computers, #text file with the computer names on individual lines. 
+        [Parameter(Mandatory = $True)]$Computers, #text file with the computer names on individual lines. 
         [Parameter(Mandatory = $True)]$outputURI
 
     )
@@ -13,9 +13,7 @@ Function Send-Job {
         return (Write-Error "$computers does not exist. ")
     }
 
-    Connection-Test -computers $computers -outfile "C:/temp/results.txt" #Relies on Invoke-Ping
-
-    $computers = Get-Content "C:/temp/results.txt"
+    $computers = Get-Content $computers | Invoke-Ping -Quiet #Relies on Invoke-Ping
     
     Remove-Job -State Stopped, Failed
 
@@ -23,7 +21,7 @@ Function Send-Job {
         
         param(
             $outputURI
-            )
+        )
 
         function Get-UserSession {
             <#  
@@ -376,28 +374,18 @@ Function Send-Job {
             [FirmwareType]::GetFirmwareType()
         }
 
+        $data = Get-UserSession | Where-Object { $_.State -like "*Active*" }
+
+        $data.LogonTime = $data.LogonTime.ToString()
+
         $SDC = reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation\ /v Model | 
         Select-String Model
         $SDC = $SDC -replace "Model    REG_SZ", ""
         $SDC = $SDC -replace "NIPRNet", ""
         $SDC = $SDC.Trim()
-
-        $data = $null
-    
-        $count = 0
-        while ($data.State -ne "Active" -and $count -le 10) {
-
-            $data = Get-UserSession | Where-Object { $_.State -like "*Active*" }
-            if ($data.State -ne "Active") { Start-Sleep 1; $count += 1 }
-
-        }
-
-        $data.LogonTime = $data.LogonTime.ToString()
-
         Add-Member -InputObject $data -Name "SDC" -Value $SDC -MemberType NoteProperty
-    
-        $make = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object Manufacturer
 
+        $make = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object Manufacturer
         $make = $make.Manufacturer
         $make = $make -replace "Hewlett-Packard", "HP"
         $make = $make -replace "Panasonic Corporation", "Panasonic"
@@ -405,9 +393,8 @@ Function Send-Job {
         $make = $make -replace "Microsoft Corporation", "Microsoft"
         $make = $make -replace "Ace Computers", "Ace"
         $make = $make -replace "Dell Inc.", "Dell"
-    
         Add-Member -InputObject $data -Name "Make" -Value $make -MemberType NoteProperty
-        $make = $make.Manufacturer.ToLower()
+        $make = $make.ToLower()
     
         if ($make -eq "lenovo") { $model = wmic csproduct get version }
         else { $model = (Get-WmiObject -Class:Win32_ComputerSystem).Model }
@@ -440,18 +427,21 @@ Function Send-Job {
         else { $secureBoot = "Other" }
         Add-Member -InputObject $data -Name "SecureBoot" -Value $secureBoot -MemberType NoteProperty
 
+        Add-Member -InputObject $data -Name "EntryDate" -Value ((Get-Date).ToString()) -MemberType NoteProperty
 
-        $data | ConvertTo-Json | Invoke-WebRequest -Uri $outputURI -Method Post -ContentType 'application/json'
- 
+        $data = $data | Select-Object -Property * -ExcludeProperty state, idletime, id, sessionname |  ConvertTo-Json
+
+        Invoke-WebRequest -Uri $outputURI -Body $data -Method Post -ContentType 'application/json' -UseBasicParsing
+
     }
-    
-    Write-Host "Sending out job to computers`n"
 
+    Write-Host "Sending out job to computers`n"
 
     foreach ($pc in $computers) {
 
         try {
 
+            Start-Sleep -Milliseconds 10
             Invoke-Command -ComputerName $pc -ScriptBlock $scriptblock -ArgumentList $outputURI -AsJob > $null
 
         }
@@ -462,6 +452,6 @@ Function Send-Job {
         }
     }
 
-    Write-Host "Job Distribution Complete!"
+    Write-Host "Job Distribution Complete! "
 
 }
