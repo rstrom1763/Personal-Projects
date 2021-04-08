@@ -8,19 +8,6 @@ const MongoClient = require("mongodb").MongoClient;
 
 url = "mongodb://localhost:27017/";
 
-async function sendText(accountSid, authToken, message, fromNum, toNum) {
-
-    const client = require('twilio')(accountSid, authToken);
-
-    client.messages
-        .create({
-            body: message,
-            from: fromNum,
-            to: toNum
-        })
-        .then(message => console.log(message.sid));
-}
-
 async function get(dataBase, coll) {
 
     MongoClient.connect(url, { useUnifiedTopology: true }, (err, db) => {
@@ -50,6 +37,5 @@ async function insert(database, coll, myobj) {
     });
 };
 
-//insert("mydb", 'customers', { userName: 'Rstrom1763', firstName: 'Ryan', lastName: 'Strom', phone: '816-787-7716', address: '53398 Lawrence Ct McConnell AFB KS 67221', email: 'rstrom1763@gmail.com', favoriteColor: 'Red' });
-//get('mydb', 'customers');
-sendText('ACd1eccbf09f918b263f0e6aaf133127d9', 'f22582e73ef9724117c62a1d52546845', 'This is the ship that made the Kessel Run in fourteen parsecs?', '+15098225903', '(816)-787-7716')
+insert("mydb", 'customers', { userName: 'Rstrom1763', firstName: 'Ryan', lastName: 'Strom', phone: '816-787-7716', address: '53398 Lawrence Ct McConnell AFB KS 67221', email: 'rstrom1763@gmail.com', favoriteColor: 'Red' });
+get('mydb', 'customers');

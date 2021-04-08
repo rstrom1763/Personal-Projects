@@ -2,7 +2,6 @@
   "dependencies": {
     "express": "^4.17.1",
     "fs": "^0.0.1-security",
-    "mongodb": "^3.6.6",
-    "twilio": "^3.60.0"
+    "mongodb": "^3.6.6"
   }
 }
