@@ -5,7 +5,7 @@ Function Send-Job {
     Param(
 
         [Parameter(Mandatory = $True)]$Computers, #text file with the computer names on individual lines. 
-        [Parameter(Mandatory = $True)]$outputURI
+        [Parameter(Mandatory = $True)]$outputURI  #Url of the machine running the Nodejs application Ex: http://computername:8081/write
 
     )
 
@@ -428,6 +428,9 @@ Function Send-Job {
         Add-Member -InputObject $data -Name "SecureBoot" -Value $secureBoot -MemberType NoteProperty
 
         Add-Member -InputObject $data -Name "EntryDate" -Value ((Get-Date).ToString()) -MemberType NoteProperty
+
+        Add-Member -InputObject $data -Name "LastReboot" -Value (Get-CimInstance -ClassName win32_operatingsystem | 
+        Select-Object csname, lastbootuptime).lastbootuptime.tostring() -MemberType NoteProperty
 
         $data = $data | Select-Object -Property * -ExcludeProperty state, idletime, id, sessionname |  ConvertTo-Json
 
