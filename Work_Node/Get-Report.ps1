@@ -3,9 +3,10 @@ Function Get-Report {
     param(
         [Parameter(Mandatory = $true)][String]$JsonDir,
         [Parameter(Mandatory = $true)][String]$ExportCSV,
-        [String]$adCacheFile,
+        [String]$ADCacheFile,
         [Parameter(Mandatory = $True)][String]$Base,
-        [Parameter(Mandatory = $True)][String]$usersOU
+        [Parameter(Mandatory = $True)][String]$UsersOU,
+        [Parameter(Mandatory = $True)][String]$ComputersOU
     )
     
     $usersOU = Get-ADOrganizationalUnit -filter * | Where-Object { $_.distinguishedname -like "*user*" -and $_.distinguishedname -notcontains "*fn*" } | Select-String $base | select-string "afb users"
@@ -45,12 +46,7 @@ Function Get-Report {
 
         foreach ( $user in $users ) {
 
-        
-            if ($user.gigID -NotLike "*No user sessions*") {
-
-                $user.gigID = $user.gigID -replace "[^0-9]"
-
-            }
+            $user.gigID = $user.gigID -replace "[^0-9]"
 
             if ($entry.Username -eq $user.gigID) {
                 
