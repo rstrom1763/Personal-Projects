@@ -9,9 +9,8 @@ Function Get-Report {
         [Parameter(Mandatory = $True)][String]$ComputersOU
     )
     
-    $usersOU = Get-ADOrganizationalUnit -filter * | Where-Object { $_.distinguishedname -like "*user*" -and $_.distinguishedname -notcontains "*fn*" } | Select-String $base | select-string "afb users"
     if (Test-Path "C:/adCache.csv") { $defaultADCacheFile = Get-Item "C:/adCache.csv" } else { $defaultADCacheFile = "C:/adCache.csv" }
-    $timespan = New-TimeSpan -Days 14
+    $timespan = New-TimeSpan -Days 7
 
     Get-ChildItem $jsonDir | Get-Content | ConvertFrom-Json | Export-Csv $exportCSV -NoTypeInformation
 
@@ -29,6 +28,7 @@ Function Get-Report {
             $users = Import-Csv $adCacheFile
         }
         else {
+            Write-Host "Fetching user data from user AD OU..."
             Get-ADUser -SearchBase $usersOU -Filter '*' -Properties * | Export-Csv $adCacheFile
             $users = Import-Csv $adCacheFile
         }
@@ -36,7 +36,13 @@ Function Get-Report {
     
     $data = Import-Csv $exportCSV
 
+    $totalCount = ($data | Measure-Object).Count
+    $count = 1
+
     foreach ($entry in $data) {
+
+        [int]$complete = ($count / $totalCount) * 100
+        Write-Progress -Activity "Cross Referencing with AD" -Status "Status: $complete%" -PercentComplete $complete
 
         if ($entry.Username -NotLike "*No user sessions*") {
 
@@ -61,7 +67,7 @@ Function Get-Report {
             }
 
         }
-
+        $count++
     }
 
     $data | Export-Csv $exportCSV -NoTypeInformation
