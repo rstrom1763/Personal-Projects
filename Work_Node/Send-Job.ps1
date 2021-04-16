@@ -430,7 +430,7 @@ Function Send-Job {
         Add-Member -InputObject $data -Name "EntryDate" -Value ((Get-Date).ToString()) -MemberType NoteProperty
 
         Add-Member -InputObject $data -Name "LastReboot" -Value (Get-CimInstance -ClassName win32_operatingsystem | 
-        Select-Object csname, lastbootuptime).lastbootuptime.tostring() -MemberType NoteProperty
+            Select-Object csname, lastbootuptime).lastbootuptime.tostring() -MemberType NoteProperty
 
         $data = $data | Select-Object -Property * -ExcludeProperty state, idletime, id, sessionname |  ConvertTo-Json
 
@@ -438,14 +438,17 @@ Function Send-Job {
 
     }
 
-    Write-Host "Sending out job to computers`n"
+    $totalCount = ($computers | Measure-Object).Count
+    $count = 0
 
     foreach ($pc in $computers) {
 
         try {
 
+
             Start-Sleep -Milliseconds 10
             Invoke-Command -ComputerName $pc -ScriptBlock $scriptblock -ArgumentList $outputURI -AsJob > $null
+
 
         }
         catch {
@@ -453,6 +456,11 @@ Function Send-Job {
             Write-Host "Failed: "$_
         
         }
+
+        $count++
+        [int]$percentComplete = ($count / $totalCount) * 100
+        Write-Progress -Activity "Sending Jobs: " -Status "Status: $percentComplete% " -PercentComplete $percentComplete
+
     }
 
     Write-Host "Job Distribution Complete! "

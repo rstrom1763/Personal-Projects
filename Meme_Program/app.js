@@ -3,8 +3,10 @@ const express = require("express");
 const app = express();
 const MongoClient = require("mongodb").MongoClient;
 
-//app.use(express.json());
-//app.listen(8081);
+port = 8081
+app.use(express.json());
+app.listen(port);
+console.log('Listening on port ' + port + '... ')
 
 url = "mongodb://localhost:27017/";
 
@@ -49,3 +51,11 @@ async function insert(database, coll, myobj) {
         });
     });
 };
+
+app.post('/', (req, res) => {
+    console.log(req.body);
+    res.send("Thank you)");
+});
+
+//insert('mydb', 'Customers', { UserName: 'Rstrom1763', FirstName: 'Ryan', LastName: 'Strom', Email: 'Rstrom1763@gmail.com' });
+//get('mydb','Customers');
