@@ -387,12 +387,6 @@ Function Send-Job {
 
         $make = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object Manufacturer
         $make = $make.Manufacturer
-        $make = $make -replace "Hewlett-Packard", "HP"
-        $make = $make -replace "Panasonic Corporation", "Panasonic"
-        $make = $make -replace "Gigabyte Technology Co., Ltd.", "Gigabyte"
-        $make = $make -replace "Microsoft Corporation", "Microsoft"
-        $make = $make -replace "Ace Computers", "Ace"
-        $make = $make -replace "Dell Inc.", "Dell"
         Add-Member -InputObject $data -Name "Make" -Value $make -MemberType NoteProperty
         $make = $make.ToLower()
     
@@ -401,14 +395,6 @@ Function Send-Job {
         $model = $model -join " "
         $model = $model -replace "Version", ""
         $model = $model.Trim()
-        $model = $model -replace "A3009DD10303", "HP ProBook 650 G1"
-        $model = $model -replace "Ace LogiCAD 45525 Performance Desktop System", "Ace LogiCAD"
-        $model = $model -replace "Mobile Workstation", ""
-        $model = $model -replace "QEB2020A", ""
-        $model = $model -replace "QEB19B", ""
-        $model = $model -replace "QEB18B", ""
-        $model = $model -replace "NOTEBOOK PC", ""
-        $model = $model -replace "2-in-1 QEB 2020B", ""
         Add-Member -InputObject $data -Name "Model" -Value $model -MemberType NoteProperty
 
         $ip = Test-Connection -ComputerName (hostname) -Count 1  | Select-Object IPV4Address
@@ -445,10 +431,8 @@ Function Send-Job {
 
         try {
 
-
             Start-Sleep -Milliseconds 10
             Invoke-Command -ComputerName $pc -ScriptBlock $scriptblock -ArgumentList $outputURI -AsJob > $null
-
 
         }
         catch {
