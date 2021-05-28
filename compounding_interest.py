@@ -8,14 +8,14 @@ def calculate_interest(principal, rate, contribution):
 initial = 0
 principal = initial
 rate = 10
-contribution = 12000
+contribution = 6000
 data = []
 years = range(40)
 for i in years:
     principal = calculate_interest(principal, rate, contribution)
     data.append(principal/1000000)
 
-print(round((data[len(data)-1]),3))
+print(round((data[len(data)-1]), 3))
 
 plt.plot(years, data, linewidth=3.0, color="red")
 
