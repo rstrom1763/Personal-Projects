@@ -59,4 +59,4 @@ app.post('/', (req, res) => {
 
 //insert('mydb', 'Customers', { UserName: 'Rstrom1763', FirstName: 'Ryan', LastName: 'Strom', Email: 'Rstrom1763@gmail.com' });
 //get('mydb','Customers');
-sendText("ACd1eccbf09f918b263f0e6aaf133127d9", "7da7a17e19f658f1951ca71f337dfa8c", "Hey Babe I love You♥", 15098225903, 8168359580)
+sendText("", "", "Hey Babe I love You♥", 15098225903, 8168359580)
