@@ -13,9 +13,10 @@
     if (!(Test-Path "$FilePath/raw") -and (Test-Path "*.cr3")) { New-Item -ItemType Directory raw }
     if (!(Test-Path "$FilePath/videos") -and (Test-Path "*.mp4")) { New-Item -ItemType Directory videos }
 
-    Get-ChildItem | Where-Object { $_.name -like "*.jpg" -or $_.name -like "*.jpeg" -or $_.name -like "*.png" } | Move-Item -Destination ./jpg
-    Get-ChildItem | Where-Object { $_.name -like "*.cr3" } | Move-Item -Destination ./raw
-    Get-ChildItem | Where-Object { $_.name -like "*.mp4" -or $_.name -like "*.m4v" } | Move-Item -Destination ./videos
+    $files = Get-ChildItem
+    $files | Where-Object { $_.name -like "*.jpg" -or $_.name -like "*.jpeg" -or $_.name -like "*.png" } | Move-Item -Destination ./jpg
+    $files | Where-Object { $_.name -like "*.cr3" } | Move-Item -Destination ./raw
+    $files | Where-Object { $_.name -like "*.mp4" -or $_.name -like "*.m4v" } | Move-Item -Destination ./videos
 
     Set-Location $originalPath
 
