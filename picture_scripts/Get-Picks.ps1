@@ -14,7 +14,7 @@ Function Get-Picks {
     $found = $false
 
     foreach ($pick in $pickList) {
-        
+        $pick = $pick.trim()
         $found = $false
         foreach ($photo in (Get-ChildItem $filePath)) {
 
