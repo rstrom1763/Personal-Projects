@@ -37,7 +37,7 @@ Function Compare-PlexDB {
     foreach ($movie in $csv1) {
         if (!$hash.ContainsKey($movie."Sort title") -and !$excludeHash.ContainsKey($movie."Sort title")) {
             $need += $movie
-            if ($movie."Part Size as Byte" -notlike "*-*") {
+            if (!($movie."Part Size as Byte" -like "*-*")) {
                 try {
                     $spaceNeeded += [int64]$movie."Part Size as Bytes"
                 }
@@ -58,8 +58,8 @@ Function Compare-PlexDB {
 
 }
 
-Clear-Host
+#Clear-Host
 
-Compare-PlexDB -csvDB1 "C:\Strom\kentLibrary.csv" -csvDB2 "C:/strom/RyanLibrary.csv" -excludeFile "C:/strom/exclude.txt" | Sort-Object -Unique -Property "Sort title" |  Export-Csv C:/strom/KentNoHave.csv -NoTypeInformation
+Compare-PlexDB -csvDB1 "C:\Strom\kentLibrary.csv" -csvDB2 "C:/strom/RyanLibrary.csv" -excludeFile C:/strom/exclude.txt | Sort-Object -Unique -Property "Sort title" |  Export-Csv C:/strom/KentNoHave.csv -NoTypeInformation
 
-Compare-PlexDB -csvDB1 "C:/strom/RyanLibrary.csv" -csvDB2 "C:\Strom\kentLibrary.csv" -excludeFile "C:/strom/exclude.txt" | Sort-Object -Unique -Property "Sort title" | Export-Csv C:/strom/RyanNoHave.csv -NoTypeInformation
+#Compare-PlexDB -csvDB1 "C:/strom/RyanLibrary.csv" -csvDB2 "C:\Strom\kentLibrary.csv" | Sort-Object -Unique -Property "Sort title" | Export-Csv C:/strom/RyanNoHave.csv -NoTypeInformation
