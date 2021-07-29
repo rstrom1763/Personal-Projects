@@ -1,6 +1,8 @@
 def rainbow_hearts():
     import requests
+    from os import system
     url = "http://3.140.244.63:8081/check"  # "http://192.168.0.190:8081/check"
+    path = "/home/pi/Desktop/personal-projects"
 
     from sense_hat import SenseHat
     import time
@@ -47,7 +49,6 @@ def rainbow_hearts():
         e, e, r, r, r, e, e, e,
         e, e, e, r, e, e, e, e
     ]
-
     pink_heart = [
         e, e, e, e, e, e, e, e,
         e, p, p, e, p, p, e, e,
@@ -119,9 +120,11 @@ def rainbow_hearts():
         e, e, e, pr, e, e, e, e
     ]
 
-    heart_colors = [red_heart, pink_heart, orange_heart,blue_heart,purple_heart,aqua_heart,green_heart,yellow_heart]
+    heart_colors = [red_heart, pink_heart, orange_heart, blue_heart,
+                    purple_heart, aqua_heart, green_heart, yellow_heart]
     i = True
     sense.clear()
+    count = 1
     while i:
         for color in heart_colors:
             try:
@@ -132,6 +135,15 @@ def rainbow_hearts():
                 time.sleep(1)
             except:
                 print "Could not connect"
+            try:
+                if (count % 120) == 0:
+                    system("git -C " + path + " pull")
+                    system("sudo systemctl daemon-reload")
+                    print "Successfully updated"
+                    count = 0
+                count += 1
+            except:
+                print "Failed to update"
 
 
 rainbow_hearts()
