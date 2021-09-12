@@ -1,26 +1,27 @@
-def similar(a, b):
-    from difflib import SequenceMatcher
-    return SequenceMatcher(None, a, b).ratio()
-
+import os
+os.system("cls")
 
 def compare_db(db1, db2):
 
-    import pandas as pd
-    import csv
+    import utils
 
-    db1 = pd.read_csv(db1)
-    db2 = pd.read_csv(db2)
+    db1 = utils.import_csv(db1)
+    db2 = utils.import_csv(db2)
 
     dict1 = {}
     dict2 = {}
+    list = []
 
-    for movie in db1:
-        dict1[movie["Title"]] = movie["Part Size as Bytes"]
-    for movie in db2:
-        dict1[movie["Title"]] = movie["Part Size as Bytes"]
+    for dict in db1:
+        dict1[dict["Sort title"]] = dict
+    for dict in db2:
+        dict2[dict["Sort title"]] = dict
     
-    print(dict1.keys)
+    for movie in dict1:
+        if movie not in dict2:
+            list.append(dict1[movie])
 
+    file = open("C:/strom/test.txt","w")
+    file.write(str(list))
 
-
-compare_db("C:\Strom\KentLibrary.csv", "C:\Strom\RyanLibrary.csv")
+compare_db("C:\Strom\KentLibrary.csv", "C:/Strom/ryanlibrary.csv")
