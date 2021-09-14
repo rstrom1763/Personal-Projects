@@ -1,7 +1,8 @@
-import os
-os.system("cls")
+#Ryan Strom
 
-def compare_db(db1, db2):
+#exports as a CSV what movies are in the first DB and not in the second
+#inputs are the file paths to each of the CSV files.
+def plex_compare(db1, db2, file):
 
     import utils
 
@@ -21,7 +22,9 @@ def compare_db(db1, db2):
         if movie not in dict2:
             list.append(dict1[movie])
 
-    file = open("C:/strom/test.txt","w")
-    file.write(str(list))
+    utils.export_csv(list, file)
 
-compare_db("C:\Strom\KentLibrary.csv", "C:/Strom/ryanlibrary.csv")
+
+#Examples:
+#plex_compare("C:/Strom/KentLibrary.csv", "C:/Strom/ryanlibrary.csv", "C:/strom/ryan_no_have.csv")
+#plex_compare("C:/Strom/ryanlibrary.csv", "C:/strom/kentlibrary.csv", "C:/strom/kent_no_have.csv")
