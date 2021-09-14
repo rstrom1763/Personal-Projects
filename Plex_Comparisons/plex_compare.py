@@ -24,6 +24,7 @@ def plex_compare(db1, db2, file):
         if movie not in dict2:
             list.append(dict1[movie])
 
+    #Iterated through the dictionaries to print required file space
     for movie in list:
         if movie["Part Size as Bytes"].isdecimal():
             space_needed += int(movie["Part Size as Bytes"])
