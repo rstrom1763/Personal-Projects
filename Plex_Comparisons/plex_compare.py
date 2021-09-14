@@ -6,6 +6,8 @@ def plex_compare(db1, db2, file):
 
     import utils
 
+    space_needed = 0
+
     db1 = utils.import_csv(db1)
     db2 = utils.import_csv(db2)
 
@@ -22,9 +24,14 @@ def plex_compare(db1, db2, file):
         if movie not in dict2:
             list.append(dict1[movie])
 
+    for movie in list:
+        if movie["Part Size as Bytes"].isdecimal():
+            space_needed += int(movie["Part Size as Bytes"])
+    print(utils.human_readable(space_needed))
+
     utils.export_csv(list, file)
 
 
 #Examples:
-#plex_compare("C:/Strom/KentLibrary.csv", "C:/Strom/ryanlibrary.csv", "C:/strom/ryan_no_have.csv")
+plex_compare("C:/Strom/KentLibrary.csv", "C:/Strom/ryanlibrary.csv", "C:/strom/ryan_no_have.csv")
 #plex_compare("C:/Strom/ryanlibrary.csv", "C:/strom/kentlibrary.csv", "C:/strom/kent_no_have.csv")

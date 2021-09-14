@@ -46,3 +46,10 @@ def export_csv(dict_list, file):
         file.write("\n")
 
     file.close #Close output file to free the memory
+
+def human_readable(num, suffix='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
