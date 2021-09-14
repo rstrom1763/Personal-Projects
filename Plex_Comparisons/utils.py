@@ -30,6 +30,9 @@ def export_csv(dict_list, file):
 
     file = file.replace("\\", "/") #Ensure no errors due to wrong slash
     csv_header = ""
+    if not dict_list:
+        print("List is empty!")
+        return
     headers = dict_list[0].keys() #Gets a list of all headers
     open(file, 'w').close() #Clears content of output file if existing else creates it
     file = open(file, 'a', encoding="utf-8") #Opens output file for appending
