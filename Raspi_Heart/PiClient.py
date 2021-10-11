@@ -132,9 +132,10 @@ def rainbow_hearts():
                     sense.set_pixels(color)
                 else:
                     sense.clear()
-                time.sleep(1)
+                time.sleep(5)
             except:
                 print "Could not connect"
+                time.sleep(1)
             try:
                 if (count % 120) == 0:
                     system("git -C " + path + " pull")
@@ -144,6 +145,5 @@ def rainbow_hearts():
                 count += 1
             except:
                 print "Failed to update"
-
 
 rainbow_hearts()
