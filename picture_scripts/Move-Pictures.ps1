@@ -16,7 +16,7 @@
     $files = Get-ChildItem
     $files | Where-Object { $_.name -like "*.jpg" -or $_.name -like "*.jpeg" -or $_.name -like "*.png" } | Move-Item -Destination ./jpg
     $files | Where-Object { $_.name -like "*.cr3" -or $_.name -like "*.cr2" } | Move-Item -Destination ./raw
-    $files | Where-Object { $_.name -like "*.mp4" -or $_.name -like "*.m4v" } | Move-Item -Destination ./videos
+    $files | Where-Object { $_.name -like "*.mp4" -or $_.name -like "*.m4v" -or $_.name -like "*.mov*" } | Move-Item -Destination ./videos
 
     Set-Location $originalPath
 

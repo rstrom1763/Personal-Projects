@@ -1,9 +1,20 @@
-$picks = Get-Content C:/strom/picks.txt
+Function Match-Photos {
 
-foreach ($jpg in (Get-ChildItem 'C:/strom/photos/chief_mann_retirement/jpg')) {
-    foreach ($pick in $picks) {
-        if ($jpg.name -like "*$pick*") {
-            Copy-Item -LiteralPath $jpg.Name -Destination 'C:/strom/photos/chief_mann_retirement/picks/jpg/'
+    [CmdletBinding()]
+    Param(
+
+        [Parameter(Mandatory = $true)][String]$SourcePath,
+        [Parameter(Mandatory = $true)][String]$DestinationPath
+
+    )
+
+    $files = Get-Content $SourcePath
+
+    foreach ($file in (Get-ChildItem $DestinationPath)) {
+        foreach ($file2 in $files) {
+            if ((($file.name) -replace $file.Extension,"") -like (($file2.name) -replace $file2.Extension,"")) {
+                Copy-Item -LiteralPath $file.Name -Destination 'C:/strom/photos/chief_mann_retirement/file2s/file/' -WhatIf
+            }
         }
     }
 }
