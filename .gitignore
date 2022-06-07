@@ -3,3 +3,5 @@
 ./Plex_Comparisons/.package.json
 ./Plex_Comparisons/.package-lock.json
 /Meme_Program/node_modules/
+/reddit/data/*.json
+/reddit/*.json
