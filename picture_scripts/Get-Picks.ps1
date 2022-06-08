@@ -11,7 +11,6 @@ Function Get-Picks {
     }
 
     $picklist = Get-Content $pickList
-    $found = $false
 
     foreach ($pick in $pickList) {
         $pick = $pick.trim()

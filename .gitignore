@@ -1,5 +1,7 @@
-data/*
-node_modules/
-.package.json
-.package-lock.json
+./Plex_Comparisons/data/*.json
+./Plex_Comparisons/node_modules/
+./Plex_Comparisons/.package.json
+./Plex_Comparisons/.package-lock.json
 /Meme_Program/node_modules/
+/reddit/data/*.json
+/reddit/*.json
