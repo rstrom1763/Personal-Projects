@@ -16,11 +16,15 @@ def parse_reddit_data():
                 comment = json.loads(comment)
 
                 # Process author
-                if comment['author'] in output['authors']:
-                    output['authors'][comment['author']] = output['authors'][comment['author']] + 1
+                author = comment['author']
+                if author in output['authors']:
+                    author_comments = output['authors'][author]['comments']
+                    author_comments.append(comment['body'])
+                    output['authors'][author] = {'comment_count':output['authors'][author]['comment_count'] + 1,
+                                                'comments':author_comments}
                 else:
-                    output['authors'][comment['author']] = 1
-
+                    output['authors'][author] = {'comment_count':1,
+                                                'comments':[comment['body']]}
                 # Process subreddit
                 if comment['subreddit'] in output['subreddits']:
                     output['subreddits'][comment['subreddit']] = output['subreddits'][comment['subreddit']] + 1
