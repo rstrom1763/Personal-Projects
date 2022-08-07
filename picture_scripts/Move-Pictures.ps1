@@ -11,7 +11,7 @@
 
     if (!(Test-Path "$FilePath/jpg") -and ((Test-Path "*.jpg") -or (Test-Path "*.png") -or (Test-Path "*.jpeg"))) { New-Item -ItemType Directory jpg }
     if (!(Test-Path "$FilePath/raw") -and ((Test-Path "*.cr3") -or (Test-Path "*.cr2"))) { New-Item -ItemType Directory raw }
-    if (!(Test-Path "$FilePath/videos") -and ((Test-Path "*.mp4") -or (Test-Path "*.m4v"))) { New-Item -ItemType Directory videos }
+    if (!(Test-Path "$FilePath/videos") -and ((Test-Path "*.mp4") -or (Test-Path "*.m4v") -or (Test-Path "*.mov"))) { New-Item -ItemType Directory videos }
 
     $files = Get-ChildItem
     $files | Where-Object { $_.name -like "*.jpg" -or $_.name -like "*.jpeg" -or $_.name -like "*.png" } | Move-Item -Destination ./jpg
