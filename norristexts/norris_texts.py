@@ -1,9 +1,9 @@
 import json
 import requests
 
-account_sid = 'ACd1eccbf09f918b263f0e6aaf133127d9'
-auth_token = '7da7a17e19f658f1951ca71f337dfa8c'
-from_num = '+15098225903'
+account_sid = ''
+auth_token = ''
+from_num = ''
 
 joke = json.loads(requests.get(
     'https://api.chucknorris.io/jokes/random').content.decode())
@@ -22,7 +22,7 @@ def send_text(body, to_num, from_num, account_sid, auth_token):
     print(message.sid)
 
 
-num_dict = {'Me': '8167877716'}
+num_dict = {}
 
 for num in num_dict.values():
     try:
