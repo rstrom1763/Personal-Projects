@@ -1,0 +1,20 @@
+version: "3"
+services:
+  raspi_heart:
+    image: node
+    container_name: reddit_api
+    ports:
+      - "8081:8081"
+      - "8765:8765"
+    restart: always
+  mongo:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodata/db:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
