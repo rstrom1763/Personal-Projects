@@ -33,7 +33,3 @@ def create_subreddit_list(file, save_path):
         json.dump(dicts, save_file)
         save_file.close()
         index += 1
-
-
-create_subreddit_list(
-    "C:/Strom/ml_testing/reddit/data/RC_2011-06.json", 'C:/strom/ml_testing/reddit')
