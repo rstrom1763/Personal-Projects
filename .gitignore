@@ -112,3 +112,4 @@ dist
 
 #MongoDB Files
 mongodata/
+reddit/.env
