@@ -14,11 +14,17 @@ mongoose.connect('mongodb://' + process.env.MONGO_HOST + '/userdata?retryWrites=
 const commentSchema = new mongoose.Schema({
     author: { type: String, required: true },
     body: { type: String, required: true },
-    id: { type: String, required: true },
+    id: { type: String, unique: true, required: true },
     subreddit: { type: String, required: true },
     subreddit_id: { type: String, required: true }
 });
 const Comment = mongoose.model('Comment', commentSchema, 'comments');
+
+const authorSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    comments: { type: Array, required: true }
+});
+const Author = mongoose.model("Author", authorSchema, "authors");
 
 app.use(express.json());
 app.use(urlencoded({ extended: false }));
@@ -42,6 +48,7 @@ app.get('/', (req, res) => {
     res.send(fs.readFileSync('./index.html', 'utf8'));
 });
 
+/*
 app.post('/uploadComment', (req, res) => {
     Comment.create(
         {
@@ -53,7 +60,7 @@ app.post('/uploadComment', (req, res) => {
         }, (err) => { //Callback Function
             if (err) {
                 res.status(208)
-                res.send(err) 
+                res.send(err)
             } else {
                 res.status(200)
                 res.send("Succesfully created comment: " + req.body.id)
@@ -61,3 +68,28 @@ app.post('/uploadComment', (req, res) => {
         }
     )
 });
+*/
+
+app.post('/uploadComment', (req, res) => {
+    Author.create({ //If the author doesn't already exist, create them
+        username: req.body.author,
+        comments: [req.body.body]
+    }, (err) => {
+        //If author already exists, add the comment to their comments array
+        if (err) {
+            Author.findOne({ username: req.body.author }, (author) => {
+                console.log(author)
+                author.comments.push(req.body.body);
+                author.save();
+                res.send("Comment added!");
+            });
+        } else {
+            res.send("Author document created!")
+        }
+    });
+
+});
+
+Author.findOne({ username: "syhanyth" }), (data) => {
+    console.log(data)
+};

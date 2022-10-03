@@ -8,7 +8,7 @@ endpoint = "http://maul.lan:8081/uploadComment"
 
 file_path = "Y:/reddit/data/RC_2018-10.json"
 count = 0
-start_at = 0
+start_at = 64990
 
 with open(file_path) as comments:
     while True:
