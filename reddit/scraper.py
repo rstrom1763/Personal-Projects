@@ -13,5 +13,3 @@ for user in test_users:
     for comment in data['data']['children']:
         if comment['kind'] == 't1':
             print(comment['data']['body'] + '\n')
-
-    time.sleep(.1)
