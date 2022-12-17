@@ -1,0 +1,11 @@
+https://google.com
+https://amazon.com
+https://youtube.com
+https://newegg.com
+https://bestbuy.com
+https://plex.tv
+https://bhphotovideo.com/
+https://go.dev
+https://stackoverflow.com
+https://disneyplus.com
+https://geeksforgeeks.org
