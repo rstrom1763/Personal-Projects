@@ -35,5 +35,9 @@ if (process.env.PROTOCOL == "https") {
 
 //Route for the pi's to send their temperature readings to
 app.post('/posttemp', (req, res) => {
-
+    log = new Date().toISOString() + " " + req.body.temp + " " + req.body.humidity + " " + req.body.pressure + "\n"
+    fs.appendFile('log.txt', log, () => (
+        console.log()
+    ));
+    res.send("Success!")
 });
