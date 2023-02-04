@@ -24,7 +24,7 @@ while True:
 
     headers = {
         'Content-Type':'application/json'
-    } #For whenever it needs some headers to be specified
+    } #Headers for the post request
 
     data = {
         'auth-code':auth_code,
