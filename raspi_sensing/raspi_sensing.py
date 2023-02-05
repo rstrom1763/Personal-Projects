@@ -3,8 +3,9 @@ import requests
 import json
 import time
 
-auth_code = ''  # Place holder for when tokens are implemented
-server = 'http://maul.lan:8090/posttemp'  # The api url
+config = json.load("./config.json")
+auth_code = config['auth_code']  # Place holder for when tokens are implemented
+server = config['url']  # The api url
 
 sense = SenseHat()
 
@@ -22,11 +23,14 @@ while True:
     # Get humidity
     humidity = round(sense.get_humidity(), 2)
 
+    # Headers for the post request
     headers = {
         'Content-Type': 'application/json'
-    }  # Headers for the post request
+    }  
 
+    #The data points put into a dictionary to be used in the request
     data = {
+        'name':config['name'],
         'auth-code': auth_code,
         'temp': temp_farenheit,
         'humidity': humidity,
@@ -36,4 +40,4 @@ while True:
     # Send post request to the server
     requests.post(server, data=json.dumps(data), headers=headers)
 
-    time.sleep(60)  # Wait one minute before logging the temperature again
+    time.sleep(config['interval'])  # Wait one minute before capturing another datapoint
