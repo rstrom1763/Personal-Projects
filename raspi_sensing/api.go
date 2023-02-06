@@ -25,17 +25,17 @@ func write_reading(c *gin.Context) {
 	data, err := ioutil.ReadAll(c.Request.Body)
 	c.String(http.StatusOK, "Success!")
 	if err != nil {
-		log.Fatal("Something went wrong! :( \n")
+		log.Fatal(err)
 	}
 	var p Reading
 	err = json.Unmarshal(data, &p)
 	if err != nil {
-		log.Fatal("Something went wrong! :( \n")
+		log.Fatal(err)
 	}
 	filename := "./logs/" + strings.ToLower(strings.Replace(p.Name, " ", "", -1)) + "_log.txt"
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE, 0644)
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatal("Something went wrong! :( \n")
+		log.Fatal(err)
 	}
 	defer file.Close() //Defer the closing of the file until the program ends
 	now := time.Now().String()
@@ -43,11 +43,12 @@ func write_reading(c *gin.Context) {
 	text := fmt.Sprintf("%v %v %v %v\n", now, p.Temp, p.Humidity, p.Pressure)
 	_, err = file.WriteString(text)
 	if err != nil {
-		log.Fatal("Something went wrong! :( \n")
+		log.Fatal(err)
 	}
 }
 
 func main() {
+	port := ":8081"
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
@@ -58,5 +59,6 @@ func main() {
 
 	})
 	r.POST("/posttemp", write_reading)
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run(port)
+	fmt.Printf("Listening on port %v...", port)
 }
