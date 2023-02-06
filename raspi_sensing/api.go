@@ -23,6 +23,7 @@ type Reading struct {
 
 func write_reading(c *gin.Context) {
 	data, err := ioutil.ReadAll(c.Request.Body)
+	c.String(http.StatusOK, "Success!")
 	if err != nil {
 		log.Fatal("Something went wrong! :( \n")
 	}
