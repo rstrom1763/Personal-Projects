@@ -3,7 +3,8 @@ import requests
 import json
 import time
 
-config = json.load("./config.json")
+config_file = open("./config.json",'r')
+config = json.load(config_file)
 auth_code = config['auth_code']  # Place holder for when tokens are implemented
 server = config['url']  # The api url
 
@@ -37,7 +38,10 @@ while True:
         'pressure': pressure
     }
 
-    # Send post request to the server
-    requests.post(server, data=json.dumps(data), headers=headers)
-
-    time.sleep(config['interval'])  # Wait one minute before capturing another datapoint
+    try:
+        # Send post request to the server
+        requests.post(server, data=json.dumps(data), headers=headers)
+    except:
+        continue
+    
+    time.sleep(int(config['interval']))  # Wait one minute before capturing another datapoint
