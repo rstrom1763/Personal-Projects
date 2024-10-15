@@ -1,3 +1,4 @@
+# Get jpg files from raw
 Function Match-Jpg {
 
     [CmdletBinding()]
@@ -20,6 +21,7 @@ Function Match-Jpg {
     }
 }
 
+# Get raw from jpg
 Function Match-Raw {
 
     [CmdletBinding()]
