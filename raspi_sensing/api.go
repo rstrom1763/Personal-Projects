@@ -7,11 +7,13 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"database/sql"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"math/big"
 	"net"
 	"net/http"
@@ -19,13 +21,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gocql/gocql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Struct type that holds the data from the reading
 type Reading struct {
 	Name     string  `json:"name"`
-	AuthCode string  `json:"auth-code"`
 	Temp     float32 `json:"temp"`
 	Humidity float32 `json:"humidity"`
 	Pressure float32 `json:"pressure"`
@@ -42,21 +43,48 @@ type Hist struct {
 	Times []int32
 }
 
-// Function to get the most recent 480 temperature readings
-func getRecentTemperatureReadings(session *gocql.Session) (string, error) {
+func initDB(path string) *sql.DB {
 
-	query := `SELECT temp, time FROM temps WHERE name = 'office' ORDER BY time DESC LIMIT 480`
+	createTablesQuery := `CREATE TABLE IF NOT EXISTS temps (
+    	name VARCHAR(255) NOT NULL,
+    	time BIGINT NOT NULL,
+    	humidity FLOAT NOT NULL,
+    	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    	pressure FLOAT NOT NULL,
+    	temp FLOAT NOT NULL
+	);`
+
+	db, err := sql.Open("sqlite3", path)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Could not open DB: %s", err))
+	}
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Could not ping DB: %s", err))
+	}
+
+	_, err = db.Exec(createTablesQuery)
+	if err != nil {
+		log.Fatalf("Could not create tables: %s", err)
+	}
+
+	return db
+
+}
+
+func roundToTwoDecimals(number float64) float64 {
+	return math.Round(number*100) / 100
+}
+
+// Function to get the most recent 480 temperature readings
+func getRecentTemperatureReadings(session *sql.DB) (string, error) {
+
+	query := `SELECT temp, time FROM temps WHERE name = 'office' ORDER BY time DESC LIMIT 5760`
 
 	// Execute the query and create an iterator
-	iter := session.Query(query).Iter()
+	rows, _ := session.Query(query)
 
-	// Defer close Scylla query iterator
-	defer func(iter *gocql.Iter) {
-		err := iter.Close()
-		if err != nil {
-			log.Printf("Error closing Scylla query iter: %s", err)
-		}
-	}(iter)
+	defer rows.Close()
 
 	// Prepare a slice to hold the results
 	var readings []Temp
@@ -64,7 +92,10 @@ func getRecentTemperatureReadings(session *gocql.Session) (string, error) {
 	var time int32
 
 	// Iterate over the results
-	for iter.Scan(&temp, &time) {
+	for rows.Next() {
+
+		_ = rows.Scan(&temp, &time)
+
 		reading := Temp{
 			Temp: temp,
 			Time: time,
@@ -73,7 +104,7 @@ func getRecentTemperatureReadings(session *gocql.Session) (string, error) {
 	}
 
 	// Check for errors during iteration
-	if err := iter.Close(); err != nil {
+	if err := rows.Close(); err != nil {
 		return "", err
 	}
 
@@ -91,7 +122,7 @@ func getRecentTemperatureReadings(session *gocql.Session) (string, error) {
 }
 
 // Function that takes the received JSON and records it to the log
-func insertReading(c *gin.Context, session *gocql.Session) {
+func insertReading(c *gin.Context, db *sql.DB) {
 	data, err := io.ReadAll(c.Request.Body) // Read the posted data
 	if err != nil {
 		log.Println("Error reading request body:", err)
@@ -112,12 +143,10 @@ func insertReading(c *gin.Context, session *gocql.Session) {
 	p.Time = int32(now.Unix())
 
 	// Define the insert query
-	insertQuery := `INSERT INTO temps (name, id, "auth-code", humidity, pressure, temp, time) VALUES (?, ?, ?, ?, ?, ?, ?)`
-
-	id := gocql.TimeUUID()
+	insertQuery := `INSERT INTO temps (name, humidity, pressure, temp, time) VALUES (?, ROUND(?,2), ROUND(?,2), ROUND(?,2), ?)`
 
 	// Execute the insert query
-	err = session.Query(insertQuery, p.Name, id, p.AuthCode, p.Humidity, p.Pressure, p.Temp, p.Time).Exec()
+	_, err = db.Exec(insertQuery, p.Name, p.Humidity, p.Pressure, p.Temp, p.Time)
 	if err != nil {
 		log.Println("Failed to execute query:", err)
 		c.String(http.StatusInternalServerError, "Failed to insert data")
@@ -127,15 +156,20 @@ func insertReading(c *gin.Context, session *gocql.Session) {
 	c.String(http.StatusOK, "Success!") // Send the success message
 }
 
-func getLatestReading(session *gocql.Session) (float32, error) {
+func getLatestReading(db *sql.DB) (float32, error) {
 	getQuery := `SELECT temp FROM temps WHERE name = 'office' ORDER BY time DESC LIMIT 1 `
-	var temp Temp
-	err := session.Query(getQuery).Scan(&temp.Temp)
+	var temp float32
+	rows, err := db.Query(getQuery)
 	if err != nil {
 		fmt.Println("Failed to execute query:", err)
 		return 0.0, nil
 	}
-	return temp.Temp, nil
+
+	for rows.Next() {
+		_ = rows.Scan(&temp)
+	}
+
+	return temp, nil
 }
 
 func abortWithError(statusCode int, err error, c *gin.Context) {
@@ -283,30 +317,18 @@ func main() {
 	r := gin.Default()           // Initialize Gin
 	protocol := "https"
 
-	// Define the ScyllaDB cluster configuration
-	cluster := gocql.NewCluster("10.0.0.234") // Replace with your ScyllaDB node addresses
-	cluster.Keyspace = "raspi_sensing"        // Replace with your keyspace name
-	cluster.Consistency = gocql.Quorum
-	chartFileBytes, _ := os.ReadFile("./chart.js")
-	indexFileBytes, _ := os.ReadFile("./index.html")
-	gzChartFileBytes, _ := gzipBytes(chartFileBytes)
-	gzIndexFileBytes, _ := gzipBytes(indexFileBytes)
-
 	//Generate TLS keys if they do not already exist
 	if !(fileExists("./cert.pem") && fileExists("./private.key")) && protocol == "https" {
 		generateSSL()
 	}
 
-	// Create a session to the cluster
-	session, err := cluster.CreateSession()
-	if err != nil {
-		log.Fatalf("Failed to connect to ScyllaDB cluster: %v", err)
-	}
+	db := initDB("./db.sqlite")
+	fmt.Println("Connected to DB")
 
-	// Close session at the end
-	defer session.Close()
-
-	fmt.Println("Connected to ScyllaDB")
+	chartFileBytes, _ := os.ReadFile("./chart.js")
+	indexFileBytes, _ := os.ReadFile("./index.html")
+	gzChartFileBytes, _ := gzipBytes(chartFileBytes)
+	gzIndexFileBytes, _ := gzipBytes(indexFileBytes)
 
 	// Route for testing reachability
 	r.GET("/ping", func(c *gin.Context) {
@@ -323,7 +345,7 @@ func main() {
 
 	// Get the latest temperature reading
 	r.GET("/temp", func(c *gin.Context) {
-		temp, err := getLatestReading(session)
+		temp, err := getLatestReading(db)
 		if err != nil {
 			abortWithError(http.StatusInternalServerError, err, c)
 			return
@@ -339,12 +361,12 @@ func main() {
 
 	// Route where the reading gets posted to
 	r.POST("/posttemp", func(c *gin.Context) {
-		insertReading(c, session)
+		insertReading(c, db)
 	})
 
 	// Get the temperatures from the last 2 hours
 	r.GET("/getHist", func(c *gin.Context) {
-		temps, err := getRecentTemperatureReadings(session)
+		temps, err := getRecentTemperatureReadings(db)
 		if err != nil {
 			fmt.Printf("could not get temp history: %v", err)
 		}
@@ -355,12 +377,12 @@ func main() {
 
 	fmt.Printf("Listening for %v on port %v...\n", protocol, port) //Notifies that server is running on X port
 	if protocol == "http" {                                        //Start running the Gin server
-		err = r.Run(":" + port)
+		err := r.Run(":" + port)
 		if err != nil {
 			fmt.Println(err)
 		}
 	} else if protocol == "https" {
-		err = r.RunTLS(":"+port, "./cert.pem", "./private.key")
+		err := r.RunTLS(":"+port, "./cert.pem", "./private.key")
 		if err != nil {
 			fmt.Println(err)
 		}

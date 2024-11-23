@@ -5,7 +5,7 @@ import time
 
 config_file = open("./config.json",'r')
 config = json.load(config_file)
-auth_code = config['auth_code']  # Place holder for when tokens are implemented
+auth_code = config['auth_code']  # Placeholder for when tokens are implemented
 server = config['url']  # The api url
 
 sense = SenseHat()
@@ -42,6 +42,7 @@ while True:
         # Send post request to the server
         requests.post(server, data=json.dumps(data), headers=headers, verify=False)
     except:
+        print("There was an error")
         continue
 
-    time.sleep(int(config['interval']))  # Wait one minute before capturing another datapoint
+    time.sleep(int(config['interval']))  # Wait the specified time before capturing another datapoint
